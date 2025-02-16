@@ -2,18 +2,9 @@ import os
 import praw
 import telegram
 from telegram.ext import Updater, CommandHandler
-import asyncio
 from dotenv import load_dotenv
 import random
-from datetime import datetime, timedelta
-from flask import Flask
-import threading
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot is running!"
+from datetime import datetime
 
 load_dotenv()
 
@@ -98,7 +89,7 @@ async def meme_3days(update, context):
 async def meme_week(update, context):
     await get_meme_by_time(update, context, days=7)
 
-def main():
+def start_bot():
     updater = Updater(os.getenv('TELEGRAM_BOT_TOKEN'), use_context=True)
     dp = updater.dispatcher
     
@@ -110,13 +101,4 @@ def main():
     dp.add_handler(CommandHandler('memeweek', meme_week))
     
     updater.start_polling()
-    return updater
-
-def run_flask():
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
-
-if __name__ == '__main__':
-    updater = main()
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.start()
     updater.idle()
