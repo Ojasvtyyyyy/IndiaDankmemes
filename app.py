@@ -3,6 +3,14 @@ from flask import Flask, jsonify
 from bot import start_bot
 import threading
 from utils import performance
+import logging
+
+# Set up logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -22,14 +30,15 @@ def health_check():
 
 def run_bot():
     try:
+        logger.info("Starting bot thread...")
         start_bot()
     except Exception as e:
-        print(f"Bot Error: {str(e)}")
+        logger.error(f"Bot Error: {str(e)}")
 
 if __name__ == '__main__':
     # Start the bot in a separate thread
     bot_thread = threading.Thread(target=run_bot)
-    bot_thread.daemon = True  # Make thread daemon so it closes with the main program
+    bot_thread.daemon = True
     bot_thread.start()
     
     app.run(host='0.0.0.0', port=10000)
