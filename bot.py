@@ -7,6 +7,14 @@ import random
 from datetime import datetime
 from config import Config
 from utils import performance
+import logging
+
+# Set up logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 reddit = praw.Reddit(
     client_id=Config.REDDIT_CLIENT_ID,
@@ -17,13 +25,18 @@ reddit = praw.Reddit(
 bot = telegram.Bot(token=Config.TELEGRAM_TOKEN)
 
 def set_commands(updater):
-    commands = [
-        BotCommand(command, description) 
-        for command, description in Config.COMMANDS.items()
-    ]
-    updater.bot.set_my_commands(commands)
+    try:
+        commands = [
+            BotCommand(command, description) 
+            for command, description in Config.COMMANDS.items()
+        ]
+        updater.bot.set_my_commands(commands)
+        logger.info("Bot commands set successfully")
+    except Exception as e:
+        logger.error(f"Error setting commands: {str(e)}")
 
 def start(update: Update, context: CallbackContext):
+    logger.info(f"Start command received from user {update.effective_user.id}")
     performance.increment_request()
     welcome_text = f"""
 🎉 *Welcome to IndianDankMemes Bot\!*
@@ -44,15 +57,16 @@ def format_commands_list():
     ])
 
 def get_meme_by_time(update: Update, context: CallbackContext, days=None):
+    logger.info(f"Meme request received from user {update.effective_user.id} with days={days}")
     performance.increment_request()
     try:
         subreddit = reddit.subreddit(Config.SUBREDDIT)
         memes = []
         
         if days is None:
-            submissions = subreddit.hot(limit=50)  # Increased to 50
+            submissions = subreddit.hot(limit=50)
         else:
-            submissions = subreddit.top(time_filter='all', limit=50)  # Changed to top all time with 50 limit
+            submissions = subreddit.top(time_filter='all', limit=50)
             
         current_time = datetime.utcnow()
         
@@ -76,15 +90,18 @@ def get_meme_by_time(update: Update, context: CallbackContext, days=None):
                 update.message.reply_video(meme.url, caption=caption, parse_mode='Markdown')
             else:
                 update.message.reply_photo(meme.url, caption=caption, parse_mode='Markdown')
+            logger.info(f"Meme sent successfully to user {update.effective_user.id}")
         else:
             update.message.reply_text("😢 No memes found!")
+            logger.warning(f"No memes found for user {update.effective_user.id}")
             
     except Exception as e:
         performance.increment_error()
-        print(f"Error: {str(e)}")
+        logger.error(f"Error fetching meme: {str(e)}")
         update.message.reply_text("🚫 Error fetching meme! Please try again later.")
 
 def get_stats(update: Update, context: CallbackContext):
+    logger.info(f"Stats request received from user {update.effective_user.id}")
     performance.increment_request()
     try:
         subreddit = reddit.subreddit(Config.SUBREDDIT)
@@ -99,26 +116,32 @@ Requests Handled: {performance.request_count:,}
 Errors: {performance.error_count:,}
         """
         update.message.reply_text(stats, parse_mode='Markdown')
+        logger.info(f"Stats sent successfully to user {update.effective_user.id}")
     except Exception as e:
         performance.increment_error()
+        logger.error(f"Error fetching stats: {str(e)}")
         update.message.reply_text("Error fetching stats!")
 
 def trending(update: Update, context: CallbackContext):
+    logger.info(f"Trending request received from user {update.effective_user.id}")
     performance.increment_request()
     try:
         subreddit = reddit.subreddit(Config.SUBREDDIT)
-        top_posts = subreddit.top(time_filter='all', limit=5)  # Changed to top all time
+        top_posts = subreddit.top(time_filter='all', limit=5)
         
         response = "*🔥 Top Posts of All Time:*\n\n"
         for i, post in enumerate(top_posts, 1):
             response += f"{i}. {post.title}\n⬆️ {post.score} | 💬 {post.num_comments}\n\n"
             
         update.message.reply_text(response, parse_mode='Markdown')
+        logger.info(f"Trending posts sent successfully to user {update.effective_user.id}")
     except Exception as e:
         performance.increment_error()
+        logger.error(f"Error fetching trending posts: {str(e)}")
         update.message.reply_text("Error fetching trending memes!")
 
 def about(update: Update, context: CallbackContext):
+    logger.info(f"About request received from user {update.effective_user.id}")
     about_text = """
 🤖 *About DankMemes Bot*
 
@@ -138,24 +161,37 @@ A Reddit\-powered Telegram bot that brings you the dankest memes from r/indianda
 _For issues/suggestions, contact developer_
     """
     update.message.reply_text(about_text, parse_mode='MarkdownV2')
+    logger.info(f"About info sent successfully to user {update.effective_user.id}")
 
 def start_bot():
-    updater = Updater(Config.TELEGRAM_TOKEN, use_context=True)
-    dp = updater.dispatcher
-    
-    # Set commands menu
-    set_commands(updater)
-    
-    # Register command handlers
-    dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(CommandHandler('meme', lambda u,c: get_meme_by_time(u,c)))
-    dp.add_handler(CommandHandler('memeforever', lambda u,c: get_meme_by_time(u,c)))
-    dp.add_handler(CommandHandler('memetoday', lambda u,c: get_meme_by_time(u,c, days=1)))
-    dp.add_handler(CommandHandler('meme3days', lambda u,c: get_meme_by_time(u,c, days=3)))
-    dp.add_handler(CommandHandler('memeweek', lambda u,c: get_meme_by_time(u,c, days=7)))
-    dp.add_handler(CommandHandler('stats', get_stats))
-    dp.add_handler(CommandHandler('trending', trending))
-    dp.add_handler(CommandHandler('about', about))
-    
-    # Start the bot without using signals
-    updater.start_polling(drop_pending_updates=True)
+    try:
+        logger.info("Initializing bot...")
+        updater = Updater(Config.TELEGRAM_TOKEN, use_context=True)
+        dp = updater.dispatcher
+        
+        logger.info("Setting up command handlers...")
+        
+        # Register command handlers
+        dp.add_handler(CommandHandler('start', start))
+        dp.add_handler(CommandHandler('meme', lambda u,c: get_meme_by_time(u,c)))
+        dp.add_handler(CommandHandler('memeforever', lambda u,c: get_meme_by_time(u,c)))
+        dp.add_handler(CommandHandler('memetoday', lambda u,c: get_meme_by_time(u,c, days=1)))
+        dp.add_handler(CommandHandler('meme3days', lambda u,c: get_meme_by_time(u,c, days=3)))
+        dp.add_handler(CommandHandler('memeweek', lambda u,c: get_meme_by_time(u,c, days=7)))
+        dp.add_handler(CommandHandler('stats', get_stats))
+        dp.add_handler(CommandHandler('trending', trending))
+        dp.add_handler(CommandHandler('about', about))
+        
+        # Set commands menu
+        set_commands(updater)
+        
+        logger.info("Starting bot polling...")
+        updater.start_polling(drop_pending_updates=True)
+        logger.info("Bot polling started successfully!")
+        
+        # Keep the bot running
+        updater.idle()
+        
+    except Exception as e:
+        logger.error(f"Error in start_bot: {str(e)}")
+        raise e
