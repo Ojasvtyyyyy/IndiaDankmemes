@@ -1,5 +1,4 @@
-# gunicorn.conf.py
+bind = "0.0.0.0:8080"
 workers = 1
-threads = 1
-bind = "0.0.0.0:10000"
-preload_app = True
+threads = 2
+timeout = 120
