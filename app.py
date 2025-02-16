@@ -13,6 +13,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+bot_thread = None
 
 @app.route('/')
 def home():
@@ -35,10 +36,16 @@ def run_bot():
     except Exception as e:
         logger.error(f"Bot Error: {str(e)}")
 
+def start_flask_thread():
+    global bot_thread
+    if bot_thread is None or not bot_thread.is_alive():
+        bot_thread = threading.Thread(target=run_bot)
+        bot_thread.daemon = True
+        bot_thread.start()
+        logger.info("Bot thread started")
+
+# Start bot when the Flask app starts
+start_flask_thread()
+
 if __name__ == '__main__':
-    # Start the bot in a separate thread
-    bot_thread = threading.Thread(target=run_bot)
-    bot_thread.daemon = True
-    bot_thread.start()
-    
     app.run(host='0.0.0.0', port=10000)
