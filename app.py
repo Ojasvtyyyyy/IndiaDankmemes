@@ -1,3 +1,4 @@
+# app.py
 from flask import Flask, jsonify
 from bot import start_bot
 import threading
@@ -19,8 +20,16 @@ def health_check():
         'errors': stats['errors']
     })
 
+updater = None
+
 def run_bot():
-    start_bot()
+    global updater
+    try:
+        updater = start_bot()
+    except Exception as e:
+        print(f"Bot Error: {str(e)}")
+        if updater:
+            updater.stop()
 
 # Start the bot in a separate thread
 bot_thread = threading.Thread(target=run_bot)
