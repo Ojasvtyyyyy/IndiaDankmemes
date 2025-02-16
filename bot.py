@@ -46,7 +46,7 @@ I serve fresh memes from r/{Config.SUBREDDIT}\!
 *Available Commands:*
 {format_commands_list()}
 
-_Made with ❤️ by @YourUsername_
+_Made with ❤️ by @Krish_Devare_
     """
     update.message.reply_text(welcome_text, parse_mode='MarkdownV2')
 
@@ -190,8 +190,10 @@ def start_bot():
         logger.info("Bot polling started successfully!")
         
         # Keep the bot running
-        updater.idle()
-        
+        import time
+        while True:
+            time.sleep(1)
+            
     except Exception as e:
         logger.error(f"Error in start_bot: {str(e)}")
         raise e
