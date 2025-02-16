@@ -4,21 +4,26 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
+    # Telegram Config
+    TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+    
+    # Reddit Config
     REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
     REDDIT_CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
-    TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     SUBREDDIT = 'indiandankmemes'
+    
+    # Bot Config
     ALLOWED_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm')
     MAX_CAPTION_LENGTH = 1024
+    
+    # Command Descriptions
     COMMANDS = {
-        'start': 'Start the bot and see commands',
-        'meme': 'Get a random hot meme',
-        'memeforever': 'Get a random meme from all time',
-        'memetoday': 'Get a meme from last 24 hours',
-        'meme3days': 'Get a meme from last 3 days',
-        'memeweek': 'Get a meme from last week',
-        'stats': 'Show subreddit statistics',
-        'help': 'Show detailed help message',
-        'about': 'About this bot',
-        'trending': 'Get trending memes'
+        'meme': 'Get a random meme',
+        'memetoday': 'Get memes from last 24 hours',
+        'meme3days': 'Get memes from last 3 days',
+        'memeweek': 'Get memes from last week',
+        'memeforever': 'Get memes from all time',
+        'stats': 'View subreddit statistics',
+        'trending': 'See top posts',
+        'about': 'About this bot'
     }
