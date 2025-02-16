@@ -1,4 +1,5 @@
-bind = "0.0.0.0:8080"
+bind = "0.0.0.0:10000"
 workers = 1
-threads = 2
+threads = 4
 timeout = 120
+preload_app = True
