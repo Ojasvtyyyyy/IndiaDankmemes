@@ -20,20 +20,16 @@ def health_check():
         'errors': stats['errors']
     })
 
-updater = None
-
 def run_bot():
-    global updater
     try:
-        updater = start_bot()
+        start_bot()
     except Exception as e:
         print(f"Bot Error: {str(e)}")
-        if updater:
-            updater.stop()
-
-# Start the bot in a separate thread
-bot_thread = threading.Thread(target=run_bot)
-bot_thread.start()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    # Start the bot in a separate thread
+    bot_thread = threading.Thread(target=run_bot)
+    bot_thread.daemon = True  # Make thread daemon so it closes with the main program
+    bot_thread.start()
+    
+    app.run(host='0.0.0.0', port=10000)
