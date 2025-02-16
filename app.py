@@ -46,6 +46,3 @@ def start_flask_thread():
 
 # Start bot when the Flask app starts
 start_flask_thread()
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
