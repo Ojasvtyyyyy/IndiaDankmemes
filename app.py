@@ -3,6 +3,7 @@ from bot import start_bot
 import threading
 from utils import performance
 import logging
+import os
 
 # Set up logging
 logging.basicConfig(
@@ -10,6 +11,12 @@ logging.basicConfig(
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
+
+# Log environment variables (safely)
+logger.info("Checking environment variables...")
+logger.info(f"TELEGRAM_TOKEN exists: {bool(os.getenv('TELEGRAM_TOKEN'))}")
+logger.info(f"REDDIT_CLIENT_ID exists: {bool(os.getenv('REDDIT_CLIENT_ID'))}")
+logger.info(f"REDDIT_CLIENT_SECRET exists: {bool(os.getenv('REDDIT_CLIENT_SECRET'))}")
 
 app = Flask(__name__)
 bot_thread = None
@@ -25,7 +32,12 @@ def health_check():
         'status': 'healthy',
         'uptime': stats['uptime'],
         'requests': stats['requests'],
-        'errors': stats['errors']
+        'errors': stats['errors'],
+        'env_vars': {
+            'telegram_token_exists': bool(os.getenv('TELEGRAM_TOKEN')),
+            'reddit_client_id_exists': bool(os.getenv('REDDIT_CLIENT_ID')),
+            'reddit_secret_exists': bool(os.getenv('REDDIT_CLIENT_SECRET'))
+        }
     })
 
 def run_bot():
@@ -45,4 +57,5 @@ def start_flask_thread():
 
 if __name__ == '__main__':
     start_flask_thread()
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
