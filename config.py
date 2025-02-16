@@ -6,10 +6,18 @@ load_dotenv()
 class Config:
     # Telegram Config
     TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+    if not TELEGRAM_TOKEN:
+        raise ValueError("TELEGRAM_TOKEN environment variable is not set!")
     
     # Reddit Config
     REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
+    if not REDDIT_CLIENT_ID:
+        raise ValueError("REDDIT_CLIENT_ID environment variable is not set!")
+        
     REDDIT_CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
+    if not REDDIT_CLIENT_SECRET:
+        raise ValueError("REDDIT_CLIENT_SECRET environment variable is not set!")
+    
     SUBREDDIT = 'indiandankmemes'
     
     # Bot Config
