@@ -55,7 +55,5 @@ def start_flask_thread():
         bot_thread.start()
         logger.info("Bot thread started")
 
-if __name__ == '__main__':
-    start_flask_thread()
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port)
+# Initialize bot when the Flask app initializes
+start_flask_thread()
