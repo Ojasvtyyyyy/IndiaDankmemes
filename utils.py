@@ -1,4 +1,3 @@
-# utils.py
 from datetime import datetime
 
 class Performance:
@@ -9,14 +8,14 @@ class Performance:
     
     def increment_request(self):
         self.request_count += 1
-    
+        
     def increment_error(self):
         self.error_count += 1
-    
+        
     def get_uptime(self):
-        delta = datetime.now() - self.start_time
-        days = delta.days
-        hours, remainder = divmod(delta.seconds, 3600)
+        uptime = datetime.now() - self.start_time
+        days = uptime.days
+        hours, remainder = divmod(uptime.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         return f"{days}d {hours}h {minutes}m {seconds}s"
     
