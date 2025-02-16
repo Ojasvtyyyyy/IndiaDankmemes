@@ -1,4 +1,3 @@
-# bot.py
 import praw
 import telegram
 from telegram import Update, BotCommand
@@ -32,8 +31,17 @@ def set_commands(updater):
         ]
         updater.bot.set_my_commands(commands)
         logger.info("Bot commands set successfully")
+        current_commands = updater.bot.get_my_commands()
+        logger.info(f"Current commands: {current_commands}")
     except Exception as e:
         logger.error(f"Error setting commands: {str(e)}")
+        raise
+
+def format_commands_list():
+    return '\n'.join([
+        f"/{cmd} \- {desc}" 
+        for cmd, desc in Config.COMMANDS.items()
+    ])
 
 def start(update: Update, context: CallbackContext):
     logger.info(f"Start command received from user {update.effective_user.id}")
@@ -49,12 +57,6 @@ I serve fresh memes from r/{Config.SUBREDDIT}\!
 _Made with ❤️ by @Krish_Devare_
     """
     update.message.reply_text(welcome_text, parse_mode='MarkdownV2')
-
-def format_commands_list():
-    return '\n'.join([
-        f"/{cmd} \- {desc}" 
-        for cmd, desc in Config.COMMANDS.items()
-    ])
 
 def get_meme_by_time(update: Update, context: CallbackContext, days=None):
     logger.info(f"Meme request received from user {update.effective_user.id} with days={days}")
@@ -148,11 +150,11 @@ def about(update: Update, context: CallbackContext):
 A Reddit\-powered Telegram bot that brings you the dankest memes from r/indiandankmemes\.
 
 *Features:*
-- Fresh memes from hot posts
-- Historical memes from all time
-- Trending memes
-- Subreddit statistics
-- Multiple time filters
+\- Fresh memes from hot posts
+\- Historical memes from all time
+\- Trending memes
+\- Subreddit statistics
+\- Multiple time filters
 
 *Developer:* @Krish_Devare
 *Version:* 2\.0
@@ -173,14 +175,31 @@ def start_bot():
         
         # Register command handlers
         dp.add_handler(CommandHandler('start', start))
+        logger.info("Registered /start command")
+        
         dp.add_handler(CommandHandler('meme', lambda u,c: get_meme_by_time(u,c)))
+        logger.info("Registered /meme command")
+        
         dp.add_handler(CommandHandler('memeforever', lambda u,c: get_meme_by_time(u,c)))
+        logger.info("Registered /memeforever command")
+        
         dp.add_handler(CommandHandler('memetoday', lambda u,c: get_meme_by_time(u,c, days=1)))
+        logger.info("Registered /memetoday command")
+        
         dp.add_handler(CommandHandler('meme3days', lambda u,c: get_meme_by_time(u,c, days=3)))
+        logger.info("Registered /meme3days command")
+        
         dp.add_handler(CommandHandler('memeweek', lambda u,c: get_meme_by_time(u,c, days=7)))
+        logger.info("Registered /memeweek command")
+        
         dp.add_handler(CommandHandler('stats', get_stats))
+        logger.info("Registered /stats command")
+        
         dp.add_handler(CommandHandler('trending', trending))
+        logger.info("Registered /trending command")
+        
         dp.add_handler(CommandHandler('about', about))
+        logger.info("Registered /about command")
         
         # Set commands menu
         set_commands(updater)
@@ -189,10 +208,7 @@ def start_bot():
         updater.start_polling(drop_pending_updates=True)
         logger.info("Bot polling started successfully!")
         
-        # Keep the bot running
-        import time
-        while True:
-            time.sleep(1)
+        updater.idle()
             
     except Exception as e:
         logger.error(f"Error in start_bot: {str(e)}")
