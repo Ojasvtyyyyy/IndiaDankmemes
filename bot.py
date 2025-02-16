@@ -31,8 +31,9 @@ def set_commands(updater):
         ]
         updater.bot.set_my_commands(commands)
         logger.info("Bot commands set successfully")
+        # Verify commands were set
         current_commands = updater.bot.get_my_commands()
-        logger.info(f"Current commands: {current_commands}")
+        logger.info(f"Verified commands: {[cmd.command for cmd in current_commands]}")
     except Exception as e:
         logger.error(f"Error setting commands: {str(e)}")
         raise
@@ -174,42 +175,47 @@ def start_bot():
         logger.info("Setting up command handlers...")
         
         # Register command handlers
-        dp.add_handler(CommandHandler('start', start))
-        logger.info("Registered /start command")
+        handlers = [
+            ('start', start),
+            ('meme', lambda u,c: get_meme_by_time(u,c)),
+            ('memeforever', lambda u,c: get_meme_by_time(u,c)),
+            ('memetoday', lambda u,c: get_meme_by_time(u,c, days=1)),
+            ('meme3days', lambda u,c: get_meme_by_time(u,c, days=3)),
+            ('memeweek', lambda u,c: get_meme_by_time(u,c, days=7)),
+            ('stats', get_stats),
+            ('trending', trending),
+            ('about', about)
+        ]
         
-        dp.add_handler(CommandHandler('meme', lambda u,c: get_meme_by_time(u,c)))
-        logger.info("Registered /meme command")
-        
-        dp.add_handler(CommandHandler('memeforever', lambda u,c: get_meme_by_time(u,c)))
-        logger.info("Registered /memeforever command")
-        
-        dp.add_handler(CommandHandler('memetoday', lambda u,c: get_meme_by_time(u,c, days=1)))
-        logger.info("Registered /memetoday command")
-        
-        dp.add_handler(CommandHandler('meme3days', lambda u,c: get_meme_by_time(u,c, days=3)))
-        logger.info("Registered /meme3days command")
-        
-        dp.add_handler(CommandHandler('memeweek', lambda u,c: get_meme_by_time(u,c, days=7)))
-        logger.info("Registered /memeweek command")
-        
-        dp.add_handler(CommandHandler('stats', get_stats))
-        logger.info("Registered /stats command")
-        
-        dp.add_handler(CommandHandler('trending', trending))
-        logger.info("Registered /trending command")
-        
-        dp.add_handler(CommandHandler('about', about))
-        logger.info("Registered /about command")
+        for command, handler in handlers:
+            dp.add_handler(CommandHandler(command, handler))
+            logger.info(f"Registered /{command} command")
         
         # Set commands menu
-        set_commands(updater)
+        try:
+            commands = [
+                BotCommand(command, Config.COMMANDS[command]) 
+                for command, _ in handlers
+            ]
+            updater.bot.set_my_commands(commands)
+            logger.info("Bot commands set successfully")
+            
+            # Verify commands were set
+            current_commands = updater.bot.get_my_commands()
+            logger.info(f"Verified commands: {[cmd.command for cmd in current_commands]}")
+        except Exception as e:
+            logger.error(f"Error setting commands: {str(e)}")
         
         logger.info("Starting bot polling...")
         updater.start_polling(drop_pending_updates=True)
         logger.info("Bot polling started successfully!")
         
+        # Keep the bot running
         updater.idle()
             
     except Exception as e:
         logger.error(f"Error in start_bot: {str(e)}")
         raise e
+
+if __name__ == "__main__":
+    start_bot()
