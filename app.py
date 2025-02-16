@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, jsonify
 from bot import start_bot
 import threading
@@ -44,5 +43,6 @@ def start_flask_thread():
         bot_thread.start()
         logger.info("Bot thread started")
 
-# Start bot when the Flask app starts
-start_flask_thread()
+if __name__ == '__main__':
+    start_flask_thread()
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
