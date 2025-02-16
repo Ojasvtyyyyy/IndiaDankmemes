@@ -1,3 +1,4 @@
+# bot.py
 import praw
 import telegram
 from telegram import Update, BotCommand
@@ -32,7 +33,7 @@ I serve fresh memes from r/{Config.SUBREDDIT}\!
 *Available Commands:*
 {format_commands_list()}
 
-_Made with ❤️ by @YourUsername_
+_Made with ❤️ by @Krish_Devare
     """
     update.message.reply_text(welcome_text, parse_mode='MarkdownV2')
 
@@ -156,5 +157,5 @@ def start_bot():
     dp.add_handler(CommandHandler('trending', trending))
     dp.add_handler(CommandHandler('about', about))
     
-    updater.start_polling()
-    updater.idle()
+    updater.start_polling(stop_signals=())  # Disable signal handling
+    return updater
