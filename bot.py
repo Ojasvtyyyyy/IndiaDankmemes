@@ -33,7 +33,7 @@ I serve fresh memes from r/{Config.SUBREDDIT}\!
 *Available Commands:*
 {format_commands_list()}
 
-_Made with ❤️ by @Krish_Devare
+_Made with ❤️ by @YourUsername_
     """
     update.message.reply_text(welcome_text, parse_mode='MarkdownV2')
 
@@ -50,9 +50,9 @@ def get_meme_by_time(update: Update, context: CallbackContext, days=None):
         memes = []
         
         if days is None:
-            submissions = subreddit.hot(limit=100)
+            submissions = subreddit.hot(limit=50)  # Increased to 50
         else:
-            submissions = subreddit.new(limit=None)
+            submissions = subreddit.top(time_filter='all', limit=50)  # Changed to top all time with 50 limit
             
         current_time = datetime.utcnow()
         
@@ -60,7 +60,7 @@ def get_meme_by_time(update: Update, context: CallbackContext, days=None):
             if days is not None:
                 post_time = datetime.fromtimestamp(submission.created_utc)
                 if (current_time - post_time).days > days:
-                    break
+                    continue
                     
             if not submission.stickied and submission.url.endswith(Config.ALLOWED_EXTENSIONS):
                 memes.append(submission)
@@ -107,9 +107,9 @@ def trending(update: Update, context: CallbackContext):
     performance.increment_request()
     try:
         subreddit = reddit.subreddit(Config.SUBREDDIT)
-        top_posts = subreddit.hot(limit=5)
+        top_posts = subreddit.top(time_filter='all', limit=5)  # Changed to top all time
         
-        response = "*🔥 Trending Memes:*\n\n"
+        response = "*🔥 Top Posts of All Time:*\n\n"
         for i, post in enumerate(top_posts, 1):
             response += f"{i}. {post.title}\n⬆️ {post.score} | 💬 {post.num_comments}\n\n"
             
@@ -157,5 +157,5 @@ def start_bot():
     dp.add_handler(CommandHandler('trending', trending))
     dp.add_handler(CommandHandler('about', about))
     
-    updater.start_polling(stop_signals=())  # Disable signal handling
-    return updater
+    # Start the bot without using signals
+    updater.start_polling(drop_pending_updates=True)
